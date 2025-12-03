@@ -1,4 +1,8 @@
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 public class LogProcessor {
     private ILogParser parser;
@@ -10,10 +14,11 @@ public class LogProcessor {
     }
 
     public void setParser(ILogParser parser) {
-        this.parser = parser;
+        this.parser = Objects.requireNonNull(parser, "parser");
     }
 
     public void addHandler(LogHandler handler) {
+        Objects.requireNonNull(handler, "handler");
         if (!handlers.isEmpty()) {
             handlers.get(handlers.size() - 1).setNext(handler);
         }
@@ -26,23 +31,21 @@ public class LogProcessor {
         }
 
         Iterator<Map<String, String>> logEntries = parser.parse(filename);
-        while (logEntries.hasNext()) {
-            Map<String, String> logEntry = logEntries.next();
-            if (!handlers.isEmpty()) {
-                handlers.get(0).handle(logEntry);
-            }
+        LogHandler firstHandler = getFirstHandler();
+        if (firstHandler == null) {
+            return;
         }
-
-        // Call the file writer after processing all logs
-        //fileWriter.writeFiles(new HashMap<>(), "json"); // Empty data for testing purposes
-        boolean testingMode = false; // Set this to true only when testing
-        if (testingMode) {
-        fileWriter.writeFiles(new HashMap<>(),"json");}
-        
+        while (logEntries.hasNext()) {
+            firstHandler.handle(logEntries.next());
+        }
     }
 
     // Method to get the file writer (for testing)
     public FileWriterStrategy getFileWriter() {
         return fileWriter;
+    }
+
+    private LogHandler getFirstHandler() {
+        return handlers.isEmpty() ? null : handlers.get(0);
     }
 }

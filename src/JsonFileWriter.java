@@ -1,9 +1,13 @@
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import java.io.*;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Map;
+import java.util.Objects;
 
 public class JsonFileWriter implements FileWriterStrategy {
+    private static final String JSON_EXTENSION = ".json";
+
     private final Gson gson;
 
     public JsonFileWriter() {
@@ -15,17 +19,18 @@ public class JsonFileWriter implements FileWriterStrategy {
 
     @Override
     public void writeFiles(Map<String, Object> aggregatedData, String fileType) {
-        if (aggregatedData == null) {
-            aggregatedData = Map.of();
-        }
-
-        String filename = fileType + ".json";
+        Map<String, Object> safeData = aggregatedData == null ? Map.of() : aggregatedData;
+        String filename = buildFilename(Objects.requireNonNull(fileType, "fileType"));
         try (FileWriter writer = new FileWriter(filename)) {
-            gson.toJson(aggregatedData, writer);
+            gson.toJson(safeData, writer);
             writer.flush();
         } catch (IOException e) {
             System.err.println("Error writing to file " + filename + ": " + e.getMessage());
             throw new RuntimeException("Failed to write to " + filename, e);
         }
+    }
+
+    private String buildFilename(String fileType) {
+        return fileType + JSON_EXTENSION;
     }
 }

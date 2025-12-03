@@ -1,4 +1,6 @@
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class ApplicationAggregator {
     private final Map<String, Integer> severityCounts = new HashMap<>();
@@ -8,7 +10,7 @@ public class ApplicationAggregator {
     }
 
     public Map<String, Object> computeAggregates() {
-        return new HashMap<>(severityCounts);
+        return new LinkedHashMap<>(severityCounts);
     }
 
     public Map<String, Object> getAggregatedData() {
